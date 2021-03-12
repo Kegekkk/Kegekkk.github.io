@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+                    <!-- 网站名 -->
+        <title>
+            Kege 
+        </title>
+        <style>
+            .content {
+                color: rgb(255, 255, 255);
+                position:absolute;
+                left: 0px;
+                right: 0px;
+                top: 20px;
+                height:100px;
+                line-height: 100px;
+                text-align: center;
+            }
+            h1.a {font-family:Impact, Charcoal, sans-serif;font-size: 60px;color:rgb(84, 166, 238)}
+            p.a {font-family:sans-serif;font-style:normal;font-size: 30px;}
+            a:link {font-family:sans-serif;font-style:normal;font-size: 30px;color: aliceblue;}
+            a:visited {font-family:sans-serif;font-style:normal;font-size: 30px;color: aliceblue;}
+            a:hover {font-family:sans-serif;font-style:normal;font-size: 30px;color: rgb(84, 166, 238);}
+            footer.a{
+                font-family:sans-serif;
+                font-style:normal;
+                position:absolute;
+                text-align:center;
+                bottom: 0px;
+                left: 0;
+	            right: 0;
+                color: blanchedalmond;
+            }
+            p.p {
+                position: relative;
+                top: 50px;
+                bottom: 50px;
+                left: 50px;
+                right:50px;
+            }
+            .bg {
+                background-image: url('http://image.kege.site/20212112/1707-T.png');
+                height:100%;
+                width: 100%;
+                position:fixed;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: cover;
+                background-attachment: fixed;
+                float:none;
+                left: 0px;
+                top: 0px;
+            }
+            .bgbox {
+                display: block;
+                backdrop-filter: blur(10px);
+                filter: brightness(0.8);
+                background-color: rgba(102, 102, 102, 0.288);
+                background-repeat: repeat;
+                position:fixed;
+                width: 1200px;
+                height: 900px;
+                border: 0px;
+                border-radius: 20px;
+                padding: 0px;
+                margin: auto;
+                top: 0;
+	            left: 0;
+	            right: 0;
+	            bottom: 0;
+
+            }
+            .t{
+                animation: a 5s;
+            }
+            @keyframes a{
+                from {color:transparent;
+                transform: rotate(0deg);}
+                to {color:rgb(84, 166, 238);
+                transform: rotate(360deg);}
+            }
+            ::-webkit-scrollbar {display:none}
+            @font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?ae7167');
+  src:  url('fonts/icomoon.eot?ae7167#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?ae7167') format('truetype'),
+    url('fonts/icomoon.woff?ae7167') format('woff'),
+    url('fonts/icomoon.svg?ae7167#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-apps-fill:before {
+  content: "\ea30";
+}
+.icon-apps-line:before {
+  content: "\ea31";
+}
+.icon-arrow-down-line:before {
+  content: "\ea39";
+}
+.icon-arrow-down-s-line:before {
+  content: "\ea3b";
+}
+.icon-arrow-left-line:before {
+  content: "\ea4d";
+}
+.icon-arrow-left-s-fill:before {
+  content: "\ea4e";
+}
+.icon-arrow-left-s-line:before {
+  content: "\ea4f";
+}
+.icon-arrow-right-line:before {
+  content: "\ea57";
+}
+.icon-arrow-right-s-fill:before {
+  content: "\ea58";
+}
+.icon-arrow-right-s-line:before {
+  content: "\ea59";
+}
+.icon-arrow-up-line:before {
+  content: "\ea5f";
+}
+.icon-arrow-up-s-line:before {
+  content: "\ea61";
+}
+.icon-calendar-line:before {
+  content: "\eae0";
+}
+.icon-cast-line:before {
+  content: "\eaf4";
+}
+.icon-chat-1-line:before {
+  content: "\eafc";
+}
+.icon-close-fill:before {
+  content: "\eb2f";
+}
+.icon-double-quotes-l:before {
+  content: "\eba6";
+}
+.icon-double-quotes-r:before {
+  content: "\eba7";
+}
+.icon-facebook-box-line:before {
+  content: "\ebf1";
+}
+.icon-fire-line:before {
+  content: "\ec55";
+}
+.icon-github-fill:before {
+  content: "\eca7";
+}
+.icon-instagram-line:before {
+  content: "\ed02";
+}
+.icon-menu-fill:before {
+  content: "\ed79";
+}
+.icon-quill-pen-line:before {
+  content: "\ee33";
+}
+.icon-search-line:before {
+  content: "\ee99";
+}
+.icon-space-ship-line:before {
+  content: "\ef06";
+}
+.icon-twitter-line:before {
+  content: "\ef7b";
+}
+.icon-ixintucom__:before {
+    font-size: 40px;
+  content: "\e900";
+}
+.icon-file-picture:before {
+  content: "\e927";
+}
+.icon-twitter:before {
+  content: "\ea96";
+}
+.icon-youtube:before {
+  content: "\ea9d";
+}
+.icon-github:before {
+  content: "\eab0";
+}
+        </style>
+    </head>
+    <body style="background-color: black;scrollbar-width: none;">
+        <div class="bg"></div>
+        <div class="bgbox"></div>
+        <div class="content">
+            <h1 class="a t">-Kege-</h1>
+            <p class="a">这里暂时还没想好要用来做什么，先去别的地方看看吧</p>
+            <p class="icon-github a">           <a href="https://github.com/Kegekkk" class="a">Github</a></p>
+            <p class="icon-ixintucom__ ">       <a href="https://space.bilibili.com/12439200/dynamic" class="a">BiliBili</a></p>
+            <p class="icon-file-picture a">     <a href="https://picture.kege.site" class="a">Kege的小图床</a></p>
+            <p class="icon-quill-pen-line a">   <a href="https://blog.kege.site" class="a">Kege的小站</a></p>
+            <p class="icon-chat-1-line a">      <a href="https://jq.qq.com/?_wv=1027&k=y7W9eqCe" class="a">Kege的唠嗑群</a></p>
+        </div>
+        <footer class="a">
+            <p>Copyright © 2021|Posted by: Kege<br><time datetime="2021-03-16"></time></p>
+          </footer>
+    </body>
+    
+</html>
