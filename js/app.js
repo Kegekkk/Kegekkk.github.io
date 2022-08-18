@@ -29,10 +29,10 @@ const locationHash = () => {
     if (target) {
       setTimeout(() => {
         if (window.location.hash.startsWith('#fn')) { // hexo-reference https://github.com/volantis-x/hexo-theme-volantis/issues/647
-          volantis.scroll.to(target, { addTop: - volantis.dom.header.offsetHeight - 5, behavior: 'instant' })
+          volantis.scroll.to(target, { addTop: - volantis.dom.header.offsetHeight - 5, behavior: 'instant', observer:true })
         } else {
           // 锚点中上半部有大片空白 高度大概是 volantis.dom.header.offsetHeight
-          volantis.scroll.to(target, { addTop: 5, behavior: 'instant' })
+          volantis.scroll.to(target, { addTop: 5, behavior: 'instant', observer:true })
         }
       }, 1000)
     }
@@ -43,7 +43,7 @@ Object.freeze(locationHash);
 /* Main */
 const VolantisApp = (() => {
   const fn = {},
-    COPYHTML = '<button class="btn-copy" data-clipboard-snippet=""><i class="fas fa-copy"></i><span>COPY</span></button>';
+    COPYHTML = '<button class="btn-copy" data-clipboard-snippet=""><i class="fa-solid fa-copy"></i><span>COPY</span></button>';
   let scrollCorrection = 80;
 
   fn.init = () => {
@@ -67,36 +67,30 @@ const VolantisApp = (() => {
   }
 
   fn.event = () => {
-    volantis.dom.$(document.getElementById("scroll-down")).on('click', function () {
+    volantis.dom.$(document.getElementById("scroll-down"))?.on('click', function () {
       fn.scrolltoElement(volantis.dom.bodyAnchor);
     });
 
     // 站点信息 最后活动日期
-    if (volantis.THEMECONFIG.sidebar.for_page.includes('webinfo') || volantis.THEMECONFIG.sidebar.for_post.includes('webinfo')) {
-      const lastupd = volantis.THEMECONFIG.sidebar.widget_library.webinfo.type.lastupd;
+    if (volantis.GLOBAL_CONFIG.sidebar.for_page.includes('webinfo') || volantis.GLOBAL_CONFIG.sidebar.for_post.includes('webinfo')) {
+      const lastupd = volantis.GLOBAL_CONFIG.sidebar.webinfo.lastupd;
       if (!!document.getElementById('last-update-show') && lastupd.enable && lastupd.friendlyShow) {
-        document.getElementById('last-update-show').innerHTML = fn.utilTimeAgo(volantis.LASTUPDATE);
+        document.getElementById('last-update-show').innerHTML = fn.utilTimeAgo(volantis.GLOBAL_CONFIG.lastupdate);
       }
     }
 
     // 站点信息 运行时间
-    if(!!document.getElementById('webinfo-runtime-count')) {
-      let BirthDay = new Date(volantis.THEMECONFIG.sidebar.widget_library.webinfo.type.runtime.data);
+    if (!!document.getElementById('webinfo-runtime-count')) {
+      let BirthDay = new Date(volantis.GLOBAL_CONFIG.sidebar.webinfo.runtime.data);
       let timeold = (new Date().getTime() - BirthDay.getTime());
       let daysold = Math.floor(timeold / (24 * 60 * 60 * 1000));
-      document.getElementById('webinfo-runtime-count').innerHTML = `${daysold} ${volantis.THEMECONFIG.sidebar.widget_library.webinfo.type.runtime.unit}`;
+      document.getElementById('webinfo-runtime-count').innerHTML = `${daysold} ${volantis.GLOBAL_CONFIG.sidebar.webinfo.runtime.unit}`;
     }
 
     // 消息提示 复制时弹出
-    if (volantis.THEMECONFIG.plugins.message.enable
-      && volantis.THEMECONFIG.plugins.message.copyright.enable) {
-      document.body.oncopy = function () {
-        VolantisApp.message(volantis.THEMECONFIG.plugins.message.copyright.title,
-          volantis.THEMECONFIG.plugins.message.copyright.message, {
-          icon: volantis.THEMECONFIG.plugins.message.copyright.icon
-        });
-      };
-    }
+    document.body.oncopy = function () {
+      fn.messageCopyright()
+    };
   }
 
   fn.restData = () => {
@@ -197,7 +191,7 @@ const VolantisApp = (() => {
     if (!pdata.ispage) return;
 
     // 填充二级导航文章标题 【移动端 PC】
-    volantis.dom.wrapper.find('.nav-sub .title').html(pdata.postTitle);
+    volantis.dom.wrapper.find('.nav-sub .title').html(document.title.split(" - ")[0]);
 
     // ====== bind events to every btn =========
     // 评论按钮 【移动端 PC】
@@ -301,7 +295,7 @@ const VolantisApp = (() => {
             let array = e.currentTarget.children
             for (let index = 0; index < array.length; index++) {
               const element = array[index];
-              if (volantis.dom.$(element).title === 'menu') { // 移动端菜单栏异常  
+              if (volantis.dom.$(element).title === 'menu') { // 移动端菜单栏异常
                 volantis.dom.$(element).display = "flex"      // https://github.com/volantis-x/hexo-theme-volantis/issues/706
               } else {
                 volantis.dom.$(element).show()
@@ -443,36 +437,32 @@ const VolantisApp = (() => {
 
   // 工具类：复制字符串到剪切板
   fn.utilWriteClipText = (str) => {
-    try {
-      return navigator.clipboard
-        .writeText(str)
-        .then(() => {
-          return Promise.resolve()
-        })
-        .catch(err => {
-          return Promise.reject(err || '复制文本失败!')
-        })
-    } catch (e) {
-      const input = document.createElement('input');
-      input.setAttribute('readonly', 'readonly');
-      document.body.appendChild(input);
-      input.setAttribute('value', str);
-      input.select();
-      try {
-        let result = document.execCommand('copy')
-        document.body.removeChild(input);
-        if (!result || result === 'unsuccessful') {
-          return Promise.reject('复制文本失败!')
-        } else {
-          return Promise.resolve()
+    return navigator.clipboard
+      .writeText(str)
+      .then(() => {
+        return Promise.resolve()
+      })
+      .catch(e => {
+        const input = document.createElement('textarea');
+        input.setAttribute('readonly', 'readonly');
+        document.body.appendChild(input);
+        input.innerHTML = str;
+        input.select();
+        try {
+          let result = document.execCommand('copy')
+          document.body.removeChild(input);
+          if (!result || result === 'unsuccessful') {
+            return Promise.reject('复制文本失败!')
+          } else {
+            return Promise.resolve()
+          }
+        } catch (e) {
+          document.body.removeChild(input);
+          return Promise.reject(
+            '当前浏览器不支持复制功能，请检查更新或更换其他浏览器操作!'
+          )
         }
-      } catch (e) {
-        document.body.removeChild(input);
-        return Promise.reject(
-          '当前浏览器不支持复制功能，请检查更新或更换其他浏览器操作!'
-        )
-      }
-    }
+      })
   }
 
   // 工具类：返回时间间隔
@@ -516,8 +506,8 @@ const VolantisApp = (() => {
   // 消息提示：标准
   fn.message = (title, message, option = {}, done = null) => {
     if (typeof iziToast === "undefined") {
-      volantis.css(volantis.THEMECONFIG.cdn.map.css.message)
-      volantis.js(volantis.THEMECONFIG.cdn.map.js.message, () => {
+      volantis.css(volantis.GLOBAL_CONFIG.plugins.message.css)
+      volantis.js(volantis.GLOBAL_CONFIG.plugins.message.js, () => {
         tozashMessage(title, message, option, done);
       });
     } else {
@@ -541,15 +531,15 @@ const VolantisApp = (() => {
         icon: 'Fontawesome',
         closeOnEscape: 'true',
         displayMode: displayMode || 'replace',
-        transitionIn: transitionIn || volantis.THEMECONFIG.plugins.message.transitionIn,
-        transitionOut: transitionOut || volantis.THEMECONFIG.plugins.message.transitionOut,
-        messageColor: messageColor || volantis.THEMECONFIG.plugins.message.messageColor,
-        titleColor: titleColor || volantis.THEMECONFIG.plugins.message.titleColor,
-        backgroundColor: backgroundColor || volantis.THEMECONFIG.plugins.message.backgroundColor,
-        zindex: zindex || volantis.THEMECONFIG.plugins.message.zindex,
-        icon: icon || volantis.THEMECONFIG.plugins.message.icon.default,
-        timeout: time || volantis.THEMECONFIG.plugins.message.time.default,
-        position: position || volantis.THEMECONFIG.plugins.message.position,
+        transitionIn: transitionIn || volantis.GLOBAL_CONFIG.plugins.message.transitionIn,
+        transitionOut: transitionOut || volantis.GLOBAL_CONFIG.plugins.message.transitionOut,
+        messageColor: messageColor || volantis.GLOBAL_CONFIG.plugins.message.messageColor,
+        titleColor: titleColor || volantis.GLOBAL_CONFIG.plugins.message.titleColor,
+        backgroundColor: backgroundColor || volantis.GLOBAL_CONFIG.plugins.message.backgroundColor,
+        zindex: zindex || volantis.GLOBAL_CONFIG.plugins.message.zindex,
+        icon: icon || volantis.GLOBAL_CONFIG.plugins.message.icon.default,
+        timeout: time || volantis.GLOBAL_CONFIG.plugins.message.time.default,
+        position: position || volantis.GLOBAL_CONFIG.plugins.message.position,
         title: title,
         message: message,
         onClosed: () => {
@@ -562,8 +552,8 @@ const VolantisApp = (() => {
   // 消息提示：询问
   fn.question = (title, message, option = {}, success = null, cancel = null, done = null) => {
     if (typeof iziToast === "undefined") {
-      volantis.css(volantis.THEMECONFIG.cdn.map.css.message)
-      volantis.js(volantis.THEMECONFIG.cdn.map.js.message, () => {
+      volantis.css(volantis.GLOBAL_CONFIG.plugins.message.css)
+      volantis.js(volantis.GLOBAL_CONFIG.plugins.message.js, () => {
         tozashQuestion(title, message, option, success, cancel, done);
       });
     } else {
@@ -589,12 +579,12 @@ const VolantisApp = (() => {
         overlay: true,
         displayMode: 'once',
         position: 'center',
-        messageColor: messageColor || volantis.THEMECONFIG.plugins.message.messageColor,
-        titleColor: titleColor || volantis.THEMECONFIG.plugins.message.titleColor,
-        backgroundColor: backgroundColor || volantis.THEMECONFIG.plugins.message.backgroundColor,
-        zindex: zindex || volantis.THEMECONFIG.plugins.message.zindex,
-        icon: icon || volantis.THEMECONFIG.plugins.message.icon.quection,
-        timeout: time || volantis.THEMECONFIG.plugins.message.time.quection,
+        messageColor: messageColor || volantis.GLOBAL_CONFIG.plugins.message.messageColor,
+        titleColor: titleColor || volantis.GLOBAL_CONFIG.plugins.message.titleColor,
+        backgroundColor: backgroundColor || volantis.GLOBAL_CONFIG.plugins.message.backgroundColor,
+        zindex: zindex || volantis.GLOBAL_CONFIG.plugins.message.zindex,
+        icon: icon || volantis.GLOBAL_CONFIG.plugins.message.icon.quection,
+        timeout: time || volantis.GLOBAL_CONFIG.plugins.message.time.quection,
         title: title,
         message: message,
         buttons: [
@@ -623,8 +613,8 @@ const VolantisApp = (() => {
     }
 
     if (typeof iziToast === "undefined") {
-      volantis.css(volantis.THEMECONFIG.cdn.map.css.message)
-      volantis.js(volantis.THEMECONFIG.cdn.map.js.message, () => {
+      volantis.css(volantis.GLOBAL_CONFIG.plugins.message.css)
+      volantis.js(volantis.GLOBAL_CONFIG.plugins.message.js, () => {
         hideMessage(done);
       });
     } else {
@@ -638,13 +628,19 @@ const VolantisApp = (() => {
   }
 
   // 消息提示：复制
+  let messageCopyrightShow = 0;
   fn.messageCopyright = () => {
     // 消息提示 复制时弹出
-    if (volantis.THEMECONFIG.plugins.message.enable
-      && volantis.THEMECONFIG.plugins.message.copyright.enable) {
-      VolantisApp.message(volantis.THEMECONFIG.plugins.message.copyright.title,
-        volantis.THEMECONFIG.plugins.message.copyright.message, {
-        icon: volantis.THEMECONFIG.plugins.message.copyright.icon
+    if (volantis.GLOBAL_CONFIG.plugins.message.enable
+      && volantis.GLOBAL_CONFIG.plugins.message.copyright.enable
+      && messageCopyrightShow < 1) {
+      messageCopyrightShow++;
+      VolantisApp.message(volantis.GLOBAL_CONFIG.plugins.message.copyright.title,
+        volantis.GLOBAL_CONFIG.plugins.message.copyright.message, {
+        icon: volantis.GLOBAL_CONFIG.plugins.message.copyright.icon,
+        transitionIn: 'flipInX',
+        transitionOut: 'flipOutX',
+        displayMode: 1
       });
     }
   }
@@ -678,7 +674,8 @@ const VolantisApp = (() => {
       document.querySelector("#l_header .nav-main").querySelectorAll('.list-v:not(.menu-phone)').forEach(function (e) {
         e.removeAttribute("style")
       })
-      document.querySelector("#l_header .menu-phone.list-v").removeAttribute("style")
+      document.querySelector("#l_header .menu-phone.list-v").removeAttribute("style");
+      messageCopyrightShow = 0;
     },
     utilCopyCode: fn.utilCopyCode,
     utilWriteClipText: fn.utilWriteClipText,
@@ -686,7 +683,8 @@ const VolantisApp = (() => {
     message: fn.message,
     question: fn.question,
     hideMessage: fn.hideMessage,
-    messageCopyright: fn.messageCopyright
+    messageCopyright: fn.messageCopyright,
+    scrolltoElement: fn.scrolltoElement
   }
 })()
 Object.freeze(VolantisApp);
@@ -696,8 +694,8 @@ const VolantisFancyBox = (() => {
   const fn = {};
 
   fn.loadFancyBox = (done) => {
-    volantis.css(volantis.THEMECONFIG.plugins.fancybox.css);
-    volantis.js(volantis.THEMECONFIG.plugins.fancybox.js).then(() => {
+    volantis.css(volantis.GLOBAL_CONFIG.plugins.fancybox.css);
+    volantis.js(volantis.GLOBAL_CONFIG.plugins.fancybox.js).then(() => {
       if (done) done();
     })
   }
@@ -807,12 +805,12 @@ Object.freeze(VolantisFancyBox);
 
 // highlightKeyWords 与 搜索功能搭配 https://github.com/next-theme/hexo-theme-next/blob/eb194a7258058302baf59f02d4b80b6655338b01/source/js/third-party/search/local-search.js
 // Question: 锚点稳定性未知
-// ToDo: 查找模式 
+// ToDo: 查找模式
 // 0. (/////////要知道浏览器自带全页面查找功能 CTRL + F)
 // 1. 右键开启查找模式 / 导航栏菜单开启?? / CTRL + F ???
 // 2. 查找模式面板 (可拖动? or 固定?)
 // 3. keyword mark id 从 0 开始编号 查找下一处 highlightKeyWords.scrollToNextHighlightKeywordMark() 查找上一处 scrollToPrevHighlightKeywordMark() 循环查找(取模%)
-// 4. 可输入修改 查找关键词 keywords(type:list) 
+// 4. 可输入修改 查找关键词 keywords(type:list)
 // 5. 区分大小写 caseSensitive (/ 全字匹配?? / 正则匹配??)
 // 6. 在选定区域中查找 querySelector ??
 // 7. 关闭查找模式
@@ -832,6 +830,7 @@ const highlightKeyWords = (() => {
     fn.scrollToFirstHighlightKeywordMark()
   }
   fn.scrollToFirstHighlightKeywordMark = () => {
+    volantis.cleanContentVisibility();
     let target = fn.scrollToNextHighlightKeywordMark("0");
     if (!target) {
       volantis.requestAnimationFrame(fn.scrollToFirstHighlightKeywordMark)
@@ -1021,6 +1020,12 @@ const DOMController = {
     })
   },
 
+  removeList: (list) => {
+    list.forEach(param => {
+      DOMController.remove(param)
+    })
+  },
+
   /**
    * 设置属性
    */
@@ -1031,6 +1036,12 @@ const DOMController = {
     })
   },
 
+  setAttributeList: (list) => {
+    list.forEach(item => {
+      DOMController.setAttribute(item[0], item[1], item[2])
+    })
+  },
+
   /**
    * 设置样式
    */
@@ -1038,6 +1049,12 @@ const DOMController = {
     const node = document.querySelectorAll(param);
     node.forEach(ele => {
       ele.style[styleName] = styleValue;
+    })
+  },
+
+  setStyleList: (list) => {
+    list.forEach(item => {
+      DOMController.setStyle(item[0], item[1], item[2])
     })
   },
 
@@ -1069,6 +1086,12 @@ const DOMController = {
     return e
   },
 
+  fadeToggleList: (list) => {
+    list.forEach(param => {
+      DOMController.fadeToggle(param)
+    })
+  },
+
   hasClass: (e, c) => {
     if (!e) return;
     return e.className.match(new RegExp('(\\s|^)' + c + '(\\s|$)'));
@@ -1094,6 +1117,56 @@ const DOMController = {
       DOMController.addClass(e, c)
     }
     return e
+  },
+
+  toggleClassList: (list) => {
+    list.forEach(item => {
+      DOMController.toggleClass(item[0], item[1])
+    })
   }
 }
 Object.freeze(DOMController);
+
+const VolantisRequest = {
+  timeoutFetch: (url, ms, requestInit) => {
+    const controller = new AbortController()
+    requestInit.signal?.addEventListener('abort', () => controller.abort())
+    let promise = fetch(url, { ...requestInit, signal: controller.signal })
+    if (ms > 0) {
+      const timer = setTimeout(() => controller.abort(), ms)
+      promise.finally(() => { clearTimeout(timer) })
+    }
+    promise = promise.catch((err) => {
+      throw ((err || {}).name === 'AbortError') ? new Error(`Fetch timeout: ${url}`) : err
+    })
+    return promise
+  },
+
+  Fetch: async (url, requestInit, timeout = 15000) => {
+    const resp = await VolantisRequest.timeoutFetch(url, timeout, requestInit);
+    if (!resp.ok) throw new Error(`Fetch error: ${url} | ${resp.status}`);
+    let json = await resp.json()
+    if (!json.success) throw json
+    return json
+  },
+
+  POST: async (url, data) => {
+    const requestInit = {
+      method: 'POST',
+    }
+    if (data) {
+      const formData = new FormData();
+      Object.keys(data).forEach(key => formData.append(key, String(data[key])))
+      requestInit.body = formData;
+    }
+    const json = await VolantisRequest.Fetch(url, requestInit)
+    return json.data;
+  },
+
+  Get: async (url, data) => {
+    const json = await VolantisRequest.Fetch(url + (data ? (`?${new URLSearchParams(data)}`) : ''), {
+      method: 'GET'
+    })
+  }
+}
+Object.freeze(VolantisRequest);
